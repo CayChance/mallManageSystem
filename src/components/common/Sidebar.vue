@@ -44,6 +44,16 @@
                         title: '系统首页'
                     },
                     {
+                        icon: 'el-icon-lx-roundadd',
+                        index: 'addgoods',
+                        title: '新增商品'
+                    },
+                    {
+                        icon: 'el-icon-lx-edit',
+                        index: 'updategoods',
+                        title: '更新商品'
+                    },
+                    {
                         icon: 'el-icon-lx-cascades',
                         index: 'table',
                         title: '基础表格'
