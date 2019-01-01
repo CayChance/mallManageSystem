@@ -6,45 +6,45 @@
 
 ## 目录结构介绍 ##
 
-	|-- build                            // webpack配置文件
-	|-- config                           // 项目打包路径
-	|-- src                              // 源码目录
-	|   |-- components                   // 组件
-	|       |-- common                   // 公共组件
-	|           |-- bus.js           	 // Event Bus
-	|           |-- Header.vue           // 公共头部
-	|           |-- Home.vue           	 // 公共路由入口
-	|           |-- Sidebar.vue          // 公共左边栏
-	|           |-- Tags.vue           	 // 页面切换标签组件
-	|       |-- page                   	 // 主要路由页面
-	|           |-- 403.vue
-	|           |-- 404.vue
-	|           |-- BaseCharts.vue       // 基础图表
-	|           |-- BaseForm.vue         // 基础表单
-	|           |-- BaseTable.vue        // 基础表格
-	|           |-- DashBoard.vue        // 系统首页
-	|           |-- DragList.vue         // 拖拽列表组件
-	|           |-- Icon.vue			 // 自定义图标组件
-	|           |-- Login.vue          	 // 登录
-	|           |-- Markdown.vue         // markdown组件
-	|           |-- Premission.vue       // 权限测试组件
-	|           |-- Upload.vue           // 图片上传
-	|           |-- VueEditor.vue        // 富文本编辑器
-	|   |-- App.vue                      // 页面入口文件
-	|   |-- main.js                      // 程序入口文件，加载各种公共组件
-	|-- .babelrc                         // ES6语法编译配置
-	|-- .editorconfig                    // 代码编写规格
-	|-- .gitignore                       // 忽略的文件
-	|-- index.html                       // 入口html文件
-	|-- package.json                     // 项目及工具的依赖配置文件
-	|-- README.md                        // 说明
+	|-- build              // webpack配置文件
+	|-- config               // 项目打包路径
+	|-- src                // 源码目录
+	|   |-- components           // 组件
+	|     |-- common           // 公共组件
+	|       |-- bus.js       	 // Event Bus
+	|       |-- Header.vue       // 公共头部
+	|       |-- Home.vue       	 // 公共路由入口
+	|       |-- Sidebar.vue      // 公共左边栏
+	|       |-- Tags.vue       	 // 页面切换标签组件
+	|     |-- page           	 // 主要路由页面
+	|       |-- 403.vue
+	|       |-- 404.vue
+	|       |-- BaseCharts.vue     // 基础图表
+	|       |-- BaseForm.vue     // 基础表单
+	|       |-- BaseTable.vue    // 基础表格
+	|       |-- DashBoard.vue    // 系统首页
+	|       |-- DragList.vue     // 拖拽列表组件
+	|       |-- Icon.vue			 // 自定义图标组件
+	|       |-- Login.vue      	 // 登录
+	|       |-- Markdown.vue     // markdown组件
+	|       |-- Premission.vue     // 权限测试组件
+	|       |-- Upload.vue       // 图片上传
+	|       |-- VueEditor.vue    // 富文本编辑器
+	|   |-- App.vue            // 页面入口文件
+	|   |-- main.js            // 程序入口文件，加载各种公共组件
+	|-- .babelrc             // ES6语法编译配置
+	|-- .editorconfig          // 代码编写规格
+	|-- .gitignore             // 忽略的文件
+	|-- index.html             // 入口html文件
+	|-- package.json           // 项目及工具的依赖配置文件
+	|-- README.md            // 说明
 
 
 ## 安装步骤 ##
 
-	git clone git@github.com:CayChance/mallManageSystem.git      // 把模板下载到本地
-	cd mallManageSystem    // 进入模板目录
-	npm install         // 安装项目依赖，等待安装完成之后
+	git clone git@github.com:CayChance/mallManageSystem.git    // 把模板下载到本地
+	cd mallManageSystem  // 进入模板目录
+	npm install     // 安装项目依赖，等待安装完成之后
 
 ## 本地开发 ##
 
@@ -64,38 +64,38 @@ vue.js封装sChart.js的图表组件。访问地址：[vue-schart](https://githu
 
 ```html
 <template>
-    <div>
-        <schart  class="wrapper"
+  <div>
+    <schart  class="wrapper"
 				:canvasId="canvasId"
 				:type="type"
 				:data="data"
 				:options="options"
 		></schart>
-    </div>
+  </div>
 </template>
 
 <script>
-    import Schart from 'vue-schart';        // 导入Schart组件
-    export default {
-        data: function(){
-            return {
-                canvasId: 'myCanvas',       // canvas的id
-                type: 'bar',                // 图表类型
-                data: [
-                    {name: '2014', value: 1342},
-                    {name: '2015', value: 2123},
-                    {name: '2016', value: 1654},
-                    {name: '2017', value: 1795},
-                ],
-                options: {                  // 图表可选参数
-                    title: 'Total sales of stores in recent years'
-                }
-            }
-        },
-        components: {
-            Schart
+  import Schart from 'vue-schart';    // 导入Schart组件
+  export default {
+    data: function(){
+      return {
+        canvasId: 'myCanvas',     // canvas的id
+        type: 'bar',        // 图表类型
+        data: [
+          {name: '2014', value: 1342},
+          {name: '2015', value: 2123},
+          {name: '2016', value: 1654},
+          {name: '2017', value: 1795},
+        ],
+        options: {          // 图表可选参数
+          title: 'Total sales of stores in recent years'
         }
+      }
+    },
+    components: {
+      Schart
     }
+  }
 </script>
 <style>
 .wrapper{
@@ -128,9 +128,9 @@ vue.js封装sChart.js的图表组件。访问地址：[vue-schart](https://githu
 
 ```JavaScript
 {
-    // 富文本编辑器组件
-    path: '/editor',
-    component: resolve => require(['../components/page/VueEditor.vue'], resolve)
+  // 富文本编辑器组件
+  path: '/editor',
+  component: resolve => require(['../components/page/VueEditor.vue'], resolve)
 },
 ```
 
@@ -156,15 +156,15 @@ vue.js封装sChart.js的图表组件。访问地址：[vue-schart](https://githu
 第一步：打开 src/main.js 文件，找到引入 element 样式的地方，换成浅绿色主题。
 
 ```javascript
-import 'element-ui/lib/theme-default/index.css';    // 默认主题
-// import '../static/css/theme-green/index.css';       // 浅绿色主题
+import 'element-ui/lib/theme-default/index.css';  // 默认主题
+// import '../static/css/theme-green/index.css';     // 浅绿色主题
 ```
 
 第二步：打开 src/App.vue 文件，找到 style 标签引入样式的地方，切换成浅绿色主题。
 
 ```javascript
 @import "../static/css/main.css";
-@import "../static/css/color-dark.css";     /*深色主题*/
+@import "../static/css/color-dark.css";   /*深色主题*/
 /*@import "../static/css/theme-green/color-green.css";   !*浅绿色主题*!*/
 ```
 
