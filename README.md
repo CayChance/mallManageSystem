@@ -19,7 +19,7 @@
 	|     |-- page           	 // 主要路由页面
 	|       |-- 403.vue
 	|       |-- 404.vue
-	|       |-- BaseCharts.vue     // 基础图表
+	|       |-- BaseCharts.vue     // 基础图
 	|       |-- BaseForm.vue     // 基础表单
 	|       |-- BaseTable.vue    // 基础表格
 	|       |-- DashBoard.vue    // 系统首页
