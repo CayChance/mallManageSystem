@@ -16,7 +16,12 @@
         </el-col>
         <el-col class="line" :span="2">-</el-col>
         <el-col :span="11">
-          <el-time-picker type="fixed-time" placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
+          <el-time-picker
+            type="fixed-time"
+            placeholder="选择时间"
+            v-model="form.date2"
+            style="width: 100%;"
+          ></el-time-picker>
         </el-col>
       </el-form-item>
       <el-form-item label="即时配送">
@@ -48,112 +53,137 @@
 </template>
 
 <script>
-  import axios from '../../utils/axios';
-  import {mapState} from 'vuex';
+import axios from "../../utils/axios";
+import { mapState } from "vuex";
 
-  const GET_GOODS_LIST = `/api/goods`;
+const GET_GOODS_LIST = `/api/goods`;
 
-  export default {
-    data() {
-      return {
-        goodsList: [],
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        },
-        search: '',
-        select: '',
-        dialogFormVisible: false,
-        totalCount: undefined
-      }
-    },
-
-    computed: {
-      ...mapState([
-        'title'
-      ])
-    },
-
-    methods:{
-      handleSelect(){
-        console.log(this.search);
+export default {
+  data() {
+    return {
+      goodsList: [],
+      form: {
+        name: "",
+        region: "",
+        date1: "",
+        date2: "",
+        delivery: false,
+        type: [],
+        resource: "",
+        desc: ""
       },
+      search: "",
+      select: "",
+      dialogFormVisible: false,
+      totalCount: undefined
+    };
+  },
 
-      //分页器
-      currentChange(index){
-        console.log('currentChange',index);
-        this.getGoodsList({pageIndex:index,pageSize:10});
-      },
+  computed: {
+    ...mapState(["title", "cc"]),
 
-      //搜索
-      handleSearch(){
-        let param = {};
-        param[this.select] = this.search;
-        this.getGoodsList(param);
-      },
-
-      //编辑
-      handleEdit(index,row){
-        console.log(index,row);
-        this.dialogFormVisible = true;
-      },
-
-      //删除
-      handleDelete(index,row){
-        return this.$confirm(`确定要删除吗？`);
-        console.log(index,row);
-      },
-
-      async getGoodsList(obj){
-        if(obj){
-          let param = ``;
-          Object.entries(obj).forEach((item)=>{
-            param+=`&${item[0]}=${item[1]}`;
-          });
-          param = param.slice(1);
-          let {code,data} = await axios.get(`${GET_GOODS_LIST}?${param}`);
-          if(code === 2000){
-            this.goodsList = data.data;
-            this.totalCount = data.totalCount;
-          }
-        }
-      },
-
-      onSubmit() {
-        console.log('submit!');
-      }
-    },
-
-    created(){
-      this.getGoodsList({pageIndex:1,pageSize:10});
-      console.log(this.title);
+    changePeople() {
+      return this.$store.getters.changePeople;
     }
+  },
+
+  methods: {
+    handleSelect() {
+      console.log(this.search);
+    },
+
+    //分页器
+    currentChange(index) {
+      console.log("currentChange", index);
+      this.getGoodsList({ pageIndex: index, pageSize: 10 });
+    },
+
+    //搜索
+    handleSearch() {
+      let param = {};
+      param[this.select] = this.search;
+      this.getGoodsList(param);
+    },
+
+    //编辑
+    handleEdit(index, row) {
+      console.log(index, row);
+      this.dialogFormVisible = true;
+    },
+
+    //删除
+    handleDelete(index, row) {
+      return this.$confirm(`确定要删除吗？`);
+      console.log(index, row);
+    },
+
+    async getGoodsList(obj) {
+      if (obj) {
+        let param = ``;
+        Object.entries(obj).forEach(item => {
+          param += `&${item[0]}=${item[1]}`;
+        });
+        param = param.slice(1);
+        let { code, data } = await axios.get(`${GET_GOODS_LIST}?${param}`);
+        if (code === 2000) {
+          this.goodsList = data.data;
+          this.totalCount = data.totalCount;
+        }
+      }
+    },
+
+    onSubmit() {
+      console.log("submit!");
+    }
+  },
+
+  created() {
+    this.getGoodsList({ pageIndex: 1, pageSize: 10 });
+    let keyCode = "keycode";
+    let keyWord = "keyword";
+    let hunterCode = "hunterCode";
+    let sid = "sid";
+    let ck = "ck";
+    let tm = "tm";
+    this.$store.commit("getParam", {
+      keyCode,
+      keyWord,
+      hunterCode,
+      sid,
+      ck,
+      tm
+    });
+    let title = '添加商品';
+    this.$store.commit('changeTitle',{
+      title
+    })
+    
+    let cat = "ccc";
+
+    this.$store.dispatch("getParamSync", {
+      cat
+    });
   }
+};
 </script>
 
 <style>
-  .add-goods{
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-  .el-input-group{
-    width: 40%;
-  }
-  .el-select .el-input {
-    width: 130px;
-  }
-  .input-with-select .el-input-group__prepend {
-    background-color: #fff;
-  }
-  .el-pagination{
-    text-align: center;
-    margin-top: 30px;
-  }
+.add-goods {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.el-input-group {
+  width: 40%;
+}
+.el-select .el-input {
+  width: 130px;
+}
+.input-with-select .el-input-group__prepend {
+  background-color: #fff;
+}
+.el-pagination {
+  text-align: center;
+  margin-top: 30px;
+}
 </style>
