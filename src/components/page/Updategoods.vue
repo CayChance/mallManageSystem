@@ -124,6 +124,7 @@
 <script>
   import axios from '../../utils/axios';
   const GET_GOODS_LIST = `/api/goods`;
+  const UN_RELEASE_GOODS = `/api/goods/status`;
 
   export default {
     data() {
@@ -142,7 +143,8 @@
         search: '',
         select: '',
         totalCount: undefined,
-        singleItems: 10
+        singleItems: 10,
+        deleteGoodsId: ''
       }
     },
     computed: {
@@ -151,6 +153,10 @@
       }
     },
     methods:{
+      init(){
+        this.getGoodsList({pageIndex:1,pageSize:this.singleItems});
+      },
+
       handleSelect(){
         console.log(this.search);
       },
@@ -175,9 +181,21 @@
       },
 
       //删除
-      handleDelete(index,row){
-        return this.$confirm(`确定要删除吗？`);
-        console.log(index,row);
+      async handleDelete(index,row){
+        this.deleteGoodsId = row.id;
+        return this.$confirm(`确定要删除吗？`,{
+          callback: this.callback
+        });
+      },
+
+      //删除的回调  下架商品
+      async callback(action){
+        if(action==='confirm'){
+          let {code,data} = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.deleteGoodsId}`);
+          if(code === 2000){
+            this.init();
+          }
+        }
       },
 
       async getGoodsList(obj){
@@ -201,7 +219,7 @@
     },
 
     created(){
-      this.getGoodsList({pageIndex:1,pageSize:this.singleItems});
+      this.init();
     }
   }
 </script>
