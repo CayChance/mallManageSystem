@@ -10,9 +10,11 @@
               <div>{{role}}</div>
             </div>
           </div>
-          <div class="user-info-list">上次登录时间：<span>2018-01-01</span></div>
-          <div class="user-info-list">上次登录地点：<span>东莞</span></div>
+          <div class="user-info-list">上次登录时间：<span></span></div>
+          <div class="user-info-list">上次登录地点：<span></span></div>
         </el-card>
+        
+        
         <el-card shadow="hover" style="height:252px;">
           <div slot="header" class="clearfix">
             <span>语言详情</span>
@@ -27,6 +29,8 @@
           <el-progress :percentage="0.9" color="#f56c6c"></el-progress>
         </el-card>
       </el-col>
+      
+      
       <el-col :span="16">
         <el-row :gutter="20" class="mgb20">
           <el-col :span="8">
@@ -40,6 +44,7 @@
               </div>
             </el-card>
           </el-col>
+
           <el-col :span="8">
             <el-card shadow="hover" :body-style="{padding: '0px'}">
               <div class="grid-content grid-con-2">
@@ -51,6 +56,7 @@
               </div>
             </el-card>
           </el-col>
+
           <el-col :span="8">
             <el-card shadow="hover" :body-style="{padding: '0px'}">
               <div class="grid-content grid-con-3">
@@ -62,7 +68,11 @@
               </div>
             </el-card>
           </el-col>
+          
         </el-row>
+
+
+        
         <el-card shadow="hover" style="height:403px;">
           <div slot="header" class="clearfix">
             <span>待办事项</span>
@@ -88,7 +98,10 @@
           </el-table>
         </el-card>
       </el-col>
+      
     </el-row>
+    
+    
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
@@ -111,7 +124,7 @@
     name: 'dashboard',
     data() {
       return {
-        name: localStorage.getItem('ms_username'),
+        name: localStorage.getItem('username'),
         todoList: [{
             title: '今天要修复100个bug',
             status: false,

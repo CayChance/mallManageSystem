@@ -16,19 +16,22 @@
         <div class="login-btn">
           <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
         </div>
-        <p class="login-tips">Tips : 用户名和密码随便填。</p>
       </el-form>
     </div>
   </div>
 </template>
 
 <script>
+  import axios from "axios";
+  const LOGIN = `/api/users/login`
+
+
   export default {
     data: function(){
       return {
         ruleForm: {
-          username: 'admin',
-          password: '123123'
+          username: '',
+          password: ''
         },
         rules: {
           username: [
@@ -42,13 +45,34 @@
     },
     methods: {
       submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            localStorage.setItem('ms_username',this.ruleForm.username);
+        // this.$refs[formName].validate((valid) => {
+        //   if (valid) {
+        //     console.log(valid);
+        //     localStorage.setItem('ms_username',this.ruleForm.username);
+        //     this.$router.push('/');
+        //   } else {
+        //     console.log('error submit!!');
+        //     return false;
+        //   }
+        // });
+        let param = {
+          password: this.ruleForm.password,
+          username: this.ruleForm.username
+        };
+
+        axios.post(`${LOGIN}?password=${this.ruleForm.password}&username=${this.ruleForm.username}`).then(response=>{
+          let {code,data,message,success} = response.data;
+          if(code === 2000){
+            localStorage.setItem('username',this.ruleForm.username);
+            localStorage.setItem('token',data);
             this.$router.push('/');
-          } else {
-            console.log('error submit!!');
-            return false;
+          }
+          else{
+            this.$message({
+              showClose: true,
+              message: message,
+              type: 'warning'
+            });
           }
         });
       }

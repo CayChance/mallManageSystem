@@ -1,246 +1,317 @@
 <template>
   <div class="add-goods">
-    <el-input
-      clearable
-      placeholder="请输入内容"
-      v-model="search"
-      @select="handleSelect"
-      class="input-with-select">
-      <el-select v-model="select" slot="prepend" placeholder="请选择">
-        <el-option label="商品名称" value="name"></el-option>
-        <el-option label="商品类别" value="category"></el-option>
-      </el-select>
-      <el-button @click="handleSearch" slot="append" icon="el-icon-search"></el-button>
-    </el-input>
+    <el-form ref="form" :rules="goodsRules" :model="goods" label-width="80px" size="small">
+      <el-form-item label="商品id" prop="id">
+        <el-input v-model="goods.id"></el-input>
+      </el-form-item>
 
-    <el-table
-      :data="goodsList"
-      style="width: 100%"
-      stripe
-      border
-      highlight-current-row
-      height="500">
-      <el-table-column
-        fixed
-        prop="id"
-        label="id"
-        width="110">
-      </el-table-column>
-      <el-table-column
-        prop="name"
-        label="商品名称"
-        width="100">
-      </el-table-column>
-      <el-table-column
-        prop="price"
-        label="商品价格"
-        width="80">
-      </el-table-column>
-      <el-table-column
-        prop="intro"
-        label="商品介绍"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        show-overflow-tooltip
-        prop="imageUrl"
-        label="商品图片"
-        width="200">
-      </el-table-column>
-      <el-table-column
-        prop="createdAt"
-        label="创建时间"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        prop="updateAt"
-        label="更新时间"
-        width="120">
-      </el-table-column>
+      <el-form-item label="商品名称" prop="name">
+        <el-input v-model="goods.name"></el-input>
+      </el-form-item>
 
-      <el-table-column
-        prop="category.id"
-        label="分类id"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        prop="category.name"
-        label="分类名称"
-        width="120">
-      </el-table-column>
+      <el-form-item label="商品价格" prop="price">
+        <el-input v-model="goods.price"></el-input>
+      </el-form-item>
 
-      <el-table-column
-        prop="referrer.id"
-        label="推荐人id"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        prop="referrer.name"
-        label="推荐人姓名"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        show-overflow-tooltip
-        prop="referrer.avatar"
-        label="推荐人头像"
-        width="200">
-      </el-table-column>
-      <el-table-column
-        prop="referrer.reason"
-        label="推荐理由"
-        width="120">
-      </el-table-column>
-      <el-table-column
-        prop="referrer.title"
-        label="推荐title"
-        width="120">
-      </el-table-column>
+      <el-form-item label="商品介绍" prop="intro">
+        <el-input v-model="goods.intro"></el-input>
+      </el-form-item>
 
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="160">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <el-form-item label="商品图片" prop="imageUrl">
+        <input ref='imageUrl' type="file" @click="uploadImage('imageUrl')">
+      </el-form-item>
 
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      @current-change="currentChange"
-      :page-count="pageCount">
-    </el-pagination>
+      <el-form-item label="商品分类" prop="categoryId">
+        <el-select clearable v-model="goods.categoryId" placeholder="请选择商品分类id" prop="categoryId">
+          <el-option v-for="(item,index) in categoriesList" :label="item.name" :value="item.id" :key="index"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="推荐人id" prop="referrerId">
+        <el-select clearable v-model="goods.referrerId" placeholder="推荐人id" prop="referrerId">
+          <el-option v-for="(item,index) in referrerIdList" :label="item.name" :value="item.id" :key=index></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" @click="unReleaseGoods">创建商品基本信息</el-button>
+        <el-button>取消</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 
 <script>
-  import axios from '../../utils/axios';
-  const GET_GOODS_LIST = `/api/goods`;
-  const UN_RELEASE_GOODS = `/api/goods/status`;
+import axios from "../../utils/axios";
 
-  export default {
-    data() {
-      return {
-        goodsList: [],
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        },
-        search: '',
-        select: '',
-        totalCount: undefined,
-        singleItems: 10,
-        deleteGoodsId: ''
-      }
-    },
-    computed: {
-      pageCount(){
-        return Math.ceil(this.totalCount/this.singleItems);
-      }
-    },
-    methods:{
-      init(){
-        this.getGoodsList({pageIndex:1,pageSize:this.singleItems});
+const qiniuUrl = `http://qiniu.wxdut.com`
+const qiniu = require('qiniu-js')
+
+const UPDATE_GOODS = `/api/goods`;
+const GET_CATEGORIES_LIST = `/api/categories`;
+const GET_REFERERS_LIST = `/api/referrers`
+const UN_RELEASE_GOODS = `/api/goods/status`;
+const GET_UPLOAD_TOKEN = `/api/files/upload-token`;
+export default {
+  data() {
+    return {
+      goodsList: [],
+      categoriesList: [],
+      referrerIdList: [],
+      goods: {
+        id: this.$route.query.id || '',
+        name: "",
+        price: "",
+        intro: "",
+        imageUrl: "",
+        categoryId: "",
+        referrerId: ""
       },
+    
+      bannerUrls: [''],
+      imageUrls: [''],
 
-      handleSelect(){
-        console.log(this.search);
+      goodsRules: {
+        id: [{ required: true, message: "请输入商品id", trigger: "blur" }],
+        name: [{ required: true, message: "请输入商品名", trigger: "blur" }],
+        price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
+        intro: [{ required: true, message: "请输入商品介绍", trigger: "blur" }],
+        imageUrl: [{ required: true, message: "请上传图片", trigger: "blur" }],
+        categoryId: [
+          { required: true, message: "请选择商品分类id", trigger: "change" }
+        ],
+        referrerId: [
+          { required: true, message: "请选择推荐人id", trigger: "change" }
+        ]
       },
+      
+      search: "",
+      select: "",
+      dialogFormVisible: false,
+      totalCount: undefined,
+      goodsId: ""
+    };
+  },
 
-      //分页器
-      currentChange(index){
-        console.log('currentChange',index);
-        this.getGoodsList({pageIndex:index,pageSize:10});
-      },
-
-      //搜索
-      handleSearch(){
-        let param = {};
-        param[this.select] = this.search;
-        this.getGoodsList(param);
-      },
-
-      //编辑
-      handleEdit(index,row){
-        console.log(index,row);
-        this.$router.replace('/addgoods')
-      },
-
-      //删除
-      async handleDelete(index,row){
-        this.deleteGoodsId = row.id;
-        return this.$confirm(`确定要删除吗？`,{
-          callback: this.callback
-        });
-      },
-
-      //删除的回调  下架商品
-      async callback(action){
-        if(action==='confirm'){
-          let {code,data} = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.deleteGoodsId}`);
-          if(code === 2000){
-            this.init();
-          }
-        }
-      },
-
-      async getGoodsList(obj){
-        if(obj){
-          let param = ``;
-          Object.entries(obj).forEach((item)=>{
-            param+=`&${item[0]}=${item[1]}`;
-          });
-          param = param.slice(1);
-          let {code,data} = await axios.get(`${GET_GOODS_LIST}?${param}`);
-          if(code === 2000){
-            this.goodsList = data.data;
-            this.totalCount = data.totalCount;
-          }
-        }
-      },
-
-      onSubmit() {
-        console.log('submit!');
-      }
-    },
-
-    created(){
-      this.init();
+  computed: {
+    pageCount(){
+      return Math.ceil(this.totalCount/this.singleItems);
     }
+  },
+
+
+    watch: {
+      status: {
+        handler: function (newVal, oldVal) {
+          this.currentStatus = this[`${newVal}`]
+        },
+        immediate: true
+      },
+    },
+
+
+  methods: {
+    init(){
+      this.getCategoriesList();
+      this.getReferrersList();
+    },
+
+    //获取分类列表
+    async getCategoriesList() {
+      let { code, data } = await axios.get(GET_CATEGORIES_LIST);
+      if (code === 2000) {
+        this.categoriesList = data;
+      }
+    },
+
+    //获取推荐人列表
+    async getReferrersList() {
+      let { code, data } = await axios.get(GET_REFERERS_LIST);
+      if (code === 2000) {
+        this.referrerIdList = data;
+      }
+    },
+
+    //下架商品
+    async unReleaseGoods(action){
+      if(this.goods.id){
+        let {code,data} = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.goods.id}`);
+        if(code === 2000){
+          this.createGoods();
+        }
+      }
+      else{
+        this.$message({
+          showClose: true,
+          message: '请先输入商品id',
+          type: 'warning'
+        });
+      }
+    },
+
+    //创建商品基本信息
+    async createGoods() {
+      let { code, data, message } = await axios.put(UPDATE_GOODS, this.goods);
+      if (code === 2000) {
+        this.release();
+        this.$message({
+          showClose: true,
+          message: message,
+          type: 'success'
+        });
+      }
+      else{
+        this.$message({
+          showClose: true,
+          message: message,
+          type: 'warning'
+        });
+      }
+    },
+
+    //重新上架
+    async release() {
+      let { code, data, message } = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.goods.id}`);
+      this.$message({
+        showClose: true,
+        message: message,
+        type: 'success'
+      });
+    },
+
+    //上传图片
+    uploadImage(ref) {
+      let input = undefined;
+      if(ref === 'imageUrl'){
+        input = this.$refs[ref];
+      }
+      else{
+        input = this.$refs[ref][0];
+      }
+      input.onchange = ()=>{
+        let _this = this;
+        let localFileName = input.value;
+        let suffix = localFileName.substring(localFileName.lastIndexOf("."),localFileName.length);//后缀名
+        let fileName = localFileName.substring(localFileName.lastIndexOf("\\")+1,localFileName.lastIndexOf("."));
+        let file = input.files[0];
+
+        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then((response)=>{
+          console.log(response);
+          if(response.code === 2000){
+            const token = response.data;
+            const observer = {
+              next(response){
+                let process = Math.floor(response.total.percent)+'%';
+                if(process === '100%'){
+                  _this.$message({
+                    showClose: true,
+                    message: '上传成功~',
+                    type: 'success'
+                  });
+
+                  if(ref === 'imageUrl'){
+                    _this.goods.imageUrl = `${qiniuUrl}/${fileName}`;
+
+                    console.log(_this.goods.imageUrl);
+                  }
+                  if(ref.indexOf('bannerUrls')>=0){
+                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`)
+                    _this.bannerUrls.push('');
+                    console.log(_this.goodsExt.bannerUrls);
+                  }
+                  if(ref.indexOf('imageUrls')>=0){
+                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`)
+                    _this.imageUrls.push('');
+                    console.log(_this.goodsExt.imageUrls);
+                  }
+                }
+              },
+              error(err){
+                console.log(err);
+              },
+              complete(res1){
+                console.log(res1);
+              }
+            };
+            const key = fileName;//上传文件名
+            const putExtra = {
+                fname: fileName,
+                params: {},
+                mimeType:["image/png", "image/jpeg", "image/gif"]
+            };
+            const config = {
+              useCdnDomain: true,
+              region: qiniu.region.z0
+            };
+
+            let observable = qiniu.upload(file, key, token, putExtra, config);
+            observable.subscribe(observer) // 上传开始
+          }
+        })
+      }
+    }, 
+  },
+
+  created() {
+    console.log(this.$route.query.id);
+    this.init();
   }
+};
 </script>
 
-<style>
-  .add-goods{
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-  .el-input-group{
-    width: 40%;
-  }
-  .el-select .el-input {
-    width: 130px;
-  }
-  .input-with-select .el-input-group__prepend {
-    background-color: #fff;
-  }
-  .el-pagination{
-    text-align: center;
-    margin-top: 30px;
-  }
+<style scoped>
+.add-goods {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+}
+.el-input-group {
+  width: 40%;
+}
+.el-form-item {
+  width: 400px;
+}
+.el-select .el-input {
+  width: 130px;
+}
+.input-with-select .el-input-group__prepend {
+  background-color: #fff;
+}
+.el-pagination {
+  text-align: center;
+  margin-top: 30px;
+}
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.el-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+.height{
+  height: 100px
+}
 </style>

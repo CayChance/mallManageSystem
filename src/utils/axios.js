@@ -5,6 +5,9 @@
 import axios from 'axios';
 
 
+const token = localStorage.getItem('token');
+
+console.log(token);
 
 // 请求拦截器
 axios.interceptors.request.use(
@@ -34,14 +37,46 @@ axios.interceptors.response.use(
 let proxy = {};
 
 proxy.get = async (url,data={},config={}) =>{
-  let baseConfig = {};
+  let baseConfig = {
+    headers: {
+      'SessionToken': token
+    }
+  };
   let result = await axios.get(url,baseConfig);
   return result;
 };
 
 proxy.post = async (url,data={},config={})=>{
-  let baseConfig = {};
+  let baseConfig = {
+    headers: {
+      'SessionToken': token
+    }
+  };
+  baseConfig = Object.assign({}, baseConfig, config);
   let result = await axios.post(url,data,baseConfig);
+  return result;
+};
+
+proxy.put = async (url,data={},config={})=>{
+  let baseConfig = {
+    headers: {
+      'SessionToken': token
+    }
+  };
+  baseConfig = Object.assign({}, baseConfig, config);
+  let result = await axios.put(url,data,baseConfig);
+  return result;
+};
+
+proxy.patch = async (url,data={},config={})=>{
+  let baseConfig = {
+    headers: {
+      'SessionToken': token
+    }
+  };
+  baseConfig = Object.assign({}, baseConfig, config);
+  console.log('patch',baseConfig);
+  let result = await axios.patch(url,data,baseConfig);
   return result;
 };
 

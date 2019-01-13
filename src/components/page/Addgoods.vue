@@ -14,16 +14,7 @@
       </el-form-item>
 
       <el-form-item label="商品图片" prop="imageUrl">
-        <el-upload
-          class="avatar-uploader"
-          action="https://jsonplaceholder.typicode.com/posts/"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-        >
-          <img v-if="goods.imageUrl" :src="goods.imageUrl" class="avatar">
-          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-        </el-upload>
+        <input ref='imageUrl' type="file" @click="uploadImage('imageUrl')">
       </el-form-item>
 
       <el-form-item label="商品分类" prop="categoryId">
@@ -59,31 +50,18 @@
       <div class="height">
       </div>
 
-      <el-form ref="form" :rules="goodsExtRules" :model="goodsExt" label-width="80px" size="small">
+      <el-form ref="form" :rules="goodsExtRules" :model="goodsExt" label-width="120px" size="small">
         <el-form-item label="banner图片" prop="bannerUrls">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="goodsExt.bannerUrls"
-            list-type="picture">
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-          </el-upload>
+          <input v-for="(item,index) in bannerUrls" 
+          :key=index 
+          :id="'bannerUrls'+index"
+          :ref="'bannerUrls'+index" type="file" @click="uploadImage(`bannerUrls${index}`)">
         </el-form-item>
 
         <el-form-item label="image图片" prop="imageUrls">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="goodsExt.imageUrls"
-            list-type="picture">
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-          </el-upload>
+          <input v-for="(item,index) in imageUrls" 
+          :key=index 
+          :ref="'imageUrls'+index" type="file" @click="uploadImage(`imageUrls${index}`)">
         </el-form-item>
 
         <el-form-item>
@@ -98,6 +76,8 @@
 
 <script>
 import axios from "../../utils/axios";
+
+const qiniuUrl = `http://qiniu.wxdut.com`
 const qiniu = require('qiniu-js')
 
 const POST_GOODS_LIST = `/api/goods`;
@@ -106,7 +86,7 @@ const GET_REFERERS_LIST = `/api/referrers`
 const RELEASE_GOODS = `/api/goods/status`;
 const POST_GOODS_SKU = `/api/goods-sku`;
 const POST_GOODS_EXT = `/api/goods-ext`;
-
+const GET_UPLOAD_TOKEN = `/api/files/upload-token`;
 export default {
   data() {
     return {
@@ -128,7 +108,10 @@ export default {
         bannerUrls: [],
         imageUrls: []
       },
-      
+
+      bannerUrls: [''],
+      imageUrls: [''],
+
       goodsRules: {
         name: [{ required: true, message: "请输入商品名", trigger: "blur" }],
         price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
@@ -155,23 +138,25 @@ export default {
       goodsId: ""
     };
   },
+
+  computed: {
+    pageCount(){
+      return Math.ceil(this.totalCount/this.singleItems);
+    }
+  },
+
+
+    watch: {
+      status: {
+        handler: function (newVal, oldVal) {
+          this.currentStatus = this[`${newVal}`]
+        },
+        immediate: true
+      },
+    },
+
+
   methods: {
-    handleAvatarSuccess(res, file) {
-      this.goods.imageUrl = URL.createObjectURL(file.raw);
-    },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG或者PNG 格式!");
-      }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
-    },
-
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
@@ -197,8 +182,6 @@ export default {
       let { code, data } = await axios.get(GET_REFERERS_LIST);
       if (code === 2000) {
         this.referrerIdList = data;
-        console.log('adas',data);
-        console.log(this.referrerIdList);
       }
     },
 
@@ -229,6 +212,7 @@ export default {
       this.$message({
         showClose: true,
         message: message,
+        type: 'success'
       });
     },
     
@@ -239,6 +223,7 @@ export default {
       this.$message({
         showClose: true,
         message: message,
+        type: 'success'
       });
     },
 
@@ -248,8 +233,81 @@ export default {
       this.$message({
         showClose: true,
         message: message,
+        type: 'success'
       });
-    }
+    },
+
+    //上传图片
+    uploadImage(ref) {
+      let input = undefined;
+      if(ref === 'imageUrl'){
+        input = this.$refs[ref];
+      }
+      else{
+        input = this.$refs[ref][0];
+      }
+      input.onchange = ()=>{
+        let _this = this;
+        let localFileName = input.value;
+        let suffix = localFileName.substring(localFileName.lastIndexOf("."),localFileName.length);//后缀名
+        let fileName = localFileName.substring(localFileName.lastIndexOf("\\")+1,localFileName.lastIndexOf("."));
+        let file = input.files[0];
+
+        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then((response)=>{
+          console.log(response);
+          if(response.code === 2000){
+            const token = response.data;
+            const observer = {
+              next(response){
+                let process = Math.floor(response.total.percent)+'%';
+                if(process === '100%'){
+                  _this.$message({
+                    showClose: true,
+                    message: '上传成功~',
+                    type: 'success'
+                  });
+
+                  if(ref === 'imageUrl'){
+                    _this.goods.imageUrl = `${qiniuUrl}/${fileName}`;
+
+                    console.log(_this.goods.imageUrl);
+                  }
+                  if(ref.indexOf('bannerUrls')>=0){
+                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`)
+                    _this.bannerUrls.push('');
+                    console.log(_this.goodsExt.bannerUrls);
+                  }
+                  if(ref.indexOf('imageUrls')>=0){
+                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`)
+                    _this.imageUrls.push('');
+                    console.log(_this.goodsExt.imageUrls);
+                  }
+                }
+              },
+              error(err){
+                console.log(err);
+              },
+              complete(res1){
+                console.log(res1);
+              }
+            };
+            const key = fileName;//上传文件名
+            const putExtra = {
+                fname: fileName,
+                params: {},
+                mimeType:["image/png", "image/jpeg", "image/gif"]
+            };
+            const config = {
+              useCdnDomain: true,
+              region: qiniu.region.z0
+            };
+
+            let observable = qiniu.upload(file, key, token, putExtra, config);
+            observable.subscribe(observer) // 上传开始
+          }
+        })
+      }
+    }, 
   },
 
   created() {
@@ -311,6 +369,6 @@ export default {
   display: block;
 }
 .height{
-  height: 160px
+  height: 100px
 }
 </style>
