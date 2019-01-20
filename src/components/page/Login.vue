@@ -55,6 +55,7 @@
         //     return false;
         //   }
         // });
+        
         let param = {
           password: this.ruleForm.password,
           username: this.ruleForm.username
