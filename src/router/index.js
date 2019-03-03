@@ -4,7 +4,6 @@ import Router from 'vue-router';
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
   routes: [
     {
       path: '/',
@@ -34,6 +33,11 @@ export default new Router({
           path: '/goodslist',
           component: resolve => require(['../components/page/GoodsList.vue'], resolve),
           meta: { title: '商品列表' }
+        },
+        {
+          path: '/ordermanage',
+          component: resolve => require(['../components/page/OrderManage.vue'], resolve),
+          meta: { title: '订单管理' }
         },
         {
           path: '/addcategories',
