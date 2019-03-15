@@ -71,37 +71,37 @@
       </el-table-column>
       <el-table-column
         prop="userId"
-        label="userId"
+        label="用户Id"
         width="110">
       </el-table-column>
       <el-table-column
         prop="amount"
-        label="amount"
-        width="80">
-      </el-table-column>
-      <el-table-column
-        prop="totalAmount"
-        label="totalAmount"
+        label="商品金额"
         width="80">
       </el-table-column>
       <el-table-column
         prop="carriage"
-        label="carriage"
+        label="运费"
+        width="80">
+      </el-table-column>
+      <el-table-column
+        prop="totalAmount"
+        label="总金额"
         width="80">
       </el-table-column>
       <el-table-column
         prop="expressNo"
-        label="expressNo"
+        label="快递单号"
         width="80">
       </el-table-column>
       <el-table-column
         prop="payTransactionId"
-        label="payTransactionId"
+        label="支付订单号"
         width="110">
       </el-table-column>
       <el-table-column
         prop="prepayId"
-        label="prepayId"
+        label="预支付下单号"
         width="150">
       </el-table-column>
       
@@ -129,18 +129,18 @@
       <el-table-column
         fixed="right"
         label="操作"
-        width="260">
+        width="220">
         <template slot-scope="scope">
           <el-button
             size="mini"
-            @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+            @click="refund(scope.$index, scope.row)">退款审批</el-button>
           <el-button
           size="mini"
-          @click="addCount(scope.$index, scope.row)">增加库存</el-button>
-          <el-button
+          @click="addExpressNo(scope.$index, scope.row)">添加快递单号</el-button>
+          <!-- <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+            @click="handleDelete(scope.$index, scope.row)">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -164,13 +164,13 @@
             <el-form-item label="商品价格">
               <span>{{ props.row.goods.price }}</span>
             </el-form-item>
-            <el-form-item label="status">
+            <el-form-item label="订单状态">
               <span>{{ props.row.goods.status }}</span>
             </el-form-item>
-            <el-form-item label="createdAt">
+            <el-form-item label="创建">
               <span>{{ props.row.goods.createdAt }}</span>
             </el-form-item>
-            <el-form-item label="updateAt">
+            <el-form-item label="更新">
               <span>{{ props.row.goods.updateAt }}</span>
             </el-form-item>
             <el-form-item label="商品图片">
@@ -185,10 +185,10 @@
             <el-form-item label="商品类别名称">
               <span>{{ props.row.goods.category.name }}</span>
             </el-form-item>
-            <el-form-item label="createdAt">
+            <el-form-item label="商品类别名称创建">
               <span>{{ props.row.goods.category.createdAt }}</span>
             </el-form-item>
-            <el-form-item label="updateAt">
+            <el-form-item label="商品类别名称更新">
               <span>{{ props.row.goods.category.updateAt }}</span>
             </el-form-item>
 
@@ -209,10 +209,10 @@
             <el-form-item label="推荐人头像">
               <span>{{ props.row.goods.referrer.avatar }}</span>
             </el-form-item>
-            <el-form-item label="推荐人createdAt">
+            <el-form-item label="推荐人创建">
               <span>{{ props.row.goods.referrer.createdAt }}</span>
             </el-form-item>
-            <el-form-item label="推荐人updateAt">
+            <el-form-item label="推荐人更新">
               <span>{{ props.row.goods.referrer.updateAt }}</span>
             </el-form-item>
           </el-form>
@@ -240,12 +240,8 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog title="追加商品库存" :visible.sync="dialogFormVisible">
-      <el-form :model="goods">
-        <el-form-item label="商品库存" :label-width="formLabelWidth">
-          <el-input v-model="goods.count" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
+    <el-dialog title="添加快递单号" :visible.sync="dialogFormVisible">
+      <el-input v-model="expressNo" autocomplete="off"></el-input>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="confirm">确 定</el-button>
@@ -264,10 +260,10 @@
 <script>
   import axios from '../../utils/axios';
   const GET_ORDER_LIST = `/api/orders`;
+  const DELETE_ORDER = `/api/orders`;
   // const GET_ORDER_LIST = `/api/orders`;
-  const UN_RELEASE_GOODS = `/api/goods/status`;
-  const ADD_GOODS_COUNT = `/api/goods-sku/total-count`;
-
+  const REFUND_APPROVAL = `/api/orders/refund-approve`;
+  const ADD_EXPRESS_NO = `/api/orders/shipped`;
 
   export default {
     data() {
@@ -288,13 +284,14 @@
         select: '',
         totalCount: undefined,
         singleItems: 10,
-        deleteGoodsId: '',
+        deleteOrderId: '',
         addGoodsId: '',
         dialogFormVisible: false,
         goods: {
           count: '',
         },
-        formLabelWidth: '120px'
+        formLabelWidth: '120px',
+        expressNo: ''
       }
     },
     computed: {
@@ -319,6 +316,7 @@
 
       //搜索
       handleSearch(){
+        console.log(this.height,'cccc');
         let param = {};
         param[this.select] = this.search;
         this.searchOneOrder(param);
@@ -341,20 +339,36 @@
       },
 
       //编辑
-      handleEdit(index,row){
+      async refund(index,row){
         console.log(index,row.id);
-        this.$router.replace(`/updategoods?id=${row.id}`)
+        let {code,data,message} = await axios.patch(`${REFUND_APPROVAL}/${row.id}`);
+        if(code === 2000){
+          this.$message({
+            showClose: true,
+            message: '操作成功！',
+            type: 'success'
+          });
+        }
+        else{
+          this.$message({
+            showClose: true,
+            message: message,
+            type: 'warning'
+          });
+        }
       },
 
-      //增加库存
-      addCount(index,row){
+      //添加订单的快递单号
+      addExpressNo(index,row){
         this.addGoodsId = row.id;
         this.dialogFormVisible = true
       },
 
-      //确认增加库存
+      //确认增加快递单号
       async confirm(){
-        let {code,data} = await axios.put(`${ADD_GOODS_COUNT}?count=${this.goods.count}&goodsId=${this.addGoodsId}`);
+        console.log(this.expressNo);
+        if(!this.expressNo) return ;
+        let {code,data,message} = await axios.patch(`${ADD_EXPRESS_NO}/${this.addGoodsId}?expressNo=${this.expressNo}`);
         if (code === 2000) {
           this.$message({
             showClose: true,
@@ -363,6 +377,7 @@
           });
 
           this.dialogFormVisible = false;
+          this.init();
         }
         else{
           this.$message({
@@ -375,7 +390,7 @@
 
       //删除
       async handleDelete(index,row){
-        this.deleteGoodsId = row.id;
+        this.deleteOrderId = row.id;
         return this.$confirm(`确定要删除吗？`,{
           callback: this.callback
         });
@@ -383,8 +398,9 @@
 
       //删除的回调  下架商品
       async callback(action){
+        console.log(this.deleteOrderId);
         if(action==='confirm'){
-          let {code,data} = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.deleteGoodsId}`);
+          let {code,data} = await axios.delete(`${DELETE_ORDER}?id=${this.deleteOrderId}`);
           if(code === 2000){
             this.$message({
               showClose: true,

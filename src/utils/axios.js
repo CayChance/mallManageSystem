@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const token = localStorage.getItem('token');
 
-console.log(token);
+console.log(token,'token');
 
 // 请求拦截器
 axios.interceptors.request.use(
@@ -80,4 +80,15 @@ proxy.patch = async (url,data={},config={})=>{
   return result;
 };
 
+proxy.delete = async (url,data={},config={})=>{
+  let baseConfig = {
+    headers: {
+      'SessionToken': token
+    }
+  };
+  baseConfig = Object.assign({}, baseConfig, config);
+  console.log('patch',baseConfig);
+  let result = await axios.delete(url,data,baseConfig);
+  return result;
+};
 export default proxy;
