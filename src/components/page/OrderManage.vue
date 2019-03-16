@@ -14,7 +14,6 @@
 
     <el-table
       :data="ordersList"
-      style="width: 100%"
       stripe
       border
       highlight-current-row>
@@ -25,9 +24,9 @@
         width="110">
       </el-table-column>
       <el-table-column
-        prop="status"
+        prop="statusText"
         label="订单状态"
-        width="70">
+        width="120">
       </el-table-column>
       <el-table-column
         prop="formatedCreatedTime"
@@ -92,12 +91,12 @@
       <el-table-column
         prop="expressNo"
         label="快递单号"
-        width="80">
+        width="100">
       </el-table-column>
       <el-table-column
         prop="payTransactionId"
         label="支付订单号"
-        width="110">
+        width="130">
       </el-table-column>
       <el-table-column
         prop="prepayId"
@@ -129,14 +128,18 @@
       <el-table-column
         fixed="right"
         label="操作"
-        width="220">
+        width="250">
         <template slot-scope="scope">
           <el-button
-            size="mini"
-            @click="refund(scope.$index, scope.row)">退款审批</el-button>
-          <el-button
           size="mini"
-          @click="addExpressNo(scope.$index, scope.row)">添加快递单号</el-button>
+          @click="addExpressNo(scope.$index, scope.row)">发货</el-button>
+          <el-button
+            size="mini"
+            @click="refundApproval(scope.$index, scope.row)">退款审批</el-button>
+          <el-button
+            size="mini"
+            @click="refund(scope.$index, scope.row)">退款</el-button>
+
           <!-- <el-button
             size="mini"
             type="danger"
@@ -261,9 +264,9 @@
   import axios from '../../utils/axios';
   const GET_ORDER_LIST = `/api/orders`;
   const DELETE_ORDER = `/api/orders`;
-  // const GET_ORDER_LIST = `/api/orders`;
   const REFUND_APPROVAL = `/api/orders/refund-approve`;
   const ADD_EXPRESS_NO = `/api/orders/shipped`;
+  const REDUND = `/api/wx-pay/refund`;
 
   export default {
     data() {
@@ -297,9 +300,14 @@
     computed: {
       pageCount(){
         return Math.ceil(this.totalCount/this.singleItems);
+      },
+
+      computedStatus(status){
+        console.log(status);
       }
     },
     methods:{
+      //初始请求所有列表
       init(){
         this.getOrderList({pageIndex:1,pageSize:this.singleItems});
       },
@@ -316,7 +324,6 @@
 
       //搜索
       handleSearch(){
-        console.log(this.height,'cccc');
         let param = {};
         param[this.select] = this.search;
         this.searchOneOrder(param);
@@ -338,9 +345,28 @@
         }
       },
 
-      //编辑
+      //退款操作
       async refund(index,row){
-        console.log(index,row.id);
+        let {code,data,message} = await axios.post(`${REDUND}?orderId=${row.id}`);
+        if(code === 2000){
+          this.$message({
+            showClose: true,
+            message: '操作成功！',
+            type: 'success'
+          });
+          this.init();
+        }
+        else{
+          this.$message({
+            showClose: true,
+            message: message,
+            type: 'warning'
+          });
+        }
+      },
+
+      //退款审批操作
+      async refundApproval(index,row){
         let {code,data,message} = await axios.patch(`${REFUND_APPROVAL}/${row.id}`);
         if(code === 2000){
           this.$message({
@@ -348,6 +374,7 @@
             message: '操作成功！',
             type: 'success'
           });
+          this.init();
         }
         else{
           this.$message({
@@ -366,7 +393,6 @@
 
       //确认增加快递单号
       async confirm(){
-        console.log(this.expressNo);
         if(!this.expressNo) return ;
         let {code,data,message} = await axios.patch(`${ADD_EXPRESS_NO}/${this.addGoodsId}?expressNo=${this.expressNo}`);
         if (code === 2000) {
@@ -398,7 +424,6 @@
 
       //删除的回调  下架商品
       async callback(action){
-        console.log(this.deleteOrderId);
         if(action==='confirm'){
           let {code,data} = await axios.delete(`${DELETE_ORDER}?id=${this.deleteOrderId}`);
           if(code === 2000){
@@ -420,7 +445,6 @@
       //获取所有order
       async getOrderList(obj){
         if(obj){
-          console.log(obj);
           let param = ``;
           Object.entries(obj).forEach((item)=>{
             param+=`&${item[0]}=${item[1]}`;
@@ -429,15 +453,37 @@
           let {code,data} = await axios.get(`${GET_ORDER_LIST}?${param}`);
           if(code === 2000){
             data.data.forEach((order)=>{
+              console.log(order.status);
               let formatedCreatedTime = new Date(order.createdAt);
               let formatedUpdateTime = new Date(order.updateAt);
               order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
               order['formatedUpdateTime'] = this.formatTime(formatedUpdateTime);
+              order['statusText'] = this.numIntoText(order.status);
             })
             this.ordersList = data.data;
             this.totalCount = data.totalCount;
           }
         }
+      },
+
+      numIntoText(num){
+        let map = {
+          0:"创建订单",
+          1:"已付款",
+          2:"已发货",
+          3:"已签收",
+          4:"已取消",
+          5:"申请退货中",
+          6:"退货申请已审批",
+          7:"退货中",
+          8:"已退货",
+          9:"申请换货中",
+          10:"换货申请已审批",
+          11:"换货中",
+          12:"已换货",
+          13:"支付超时自动取消"
+        }
+        return map[num];
       },
 
       onSubmit() {

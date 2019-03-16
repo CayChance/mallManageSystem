@@ -49,7 +49,7 @@
             title: '商品列表'
           },
           {
-            icon: 'el-icon-lx-shop',
+            icon: 'el-icon-goods',
             index: 'ordermanage',
             title: '订单管理'
           },

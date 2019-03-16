@@ -7,8 +7,6 @@ import axios from 'axios';
 
 const token = localStorage.getItem('token');
 
-console.log(token,'token');
-
 // 请求拦截器
 axios.interceptors.request.use(
   config => {
@@ -75,7 +73,6 @@ proxy.patch = async (url,data={},config={})=>{
     }
   };
   baseConfig = Object.assign({}, baseConfig, config);
-  console.log('patch',baseConfig);
   let result = await axios.patch(url,data,baseConfig);
   return result;
 };
@@ -87,7 +84,6 @@ proxy.delete = async (url,data={},config={})=>{
     }
   };
   baseConfig = Object.assign({}, baseConfig, config);
-  console.log('patch',baseConfig);
   let result = await axios.delete(url,data,baseConfig);
   return result;
 };
