@@ -30,21 +30,21 @@
         label="订单状态"
         width="120">
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="status"
         label="订单状态"
         width="120">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         prop="formatedCreatedTime"
         label="订单日期"
         width="90">
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="createdAt"
         label="订单日期时间戳"
         width="80">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         prop="provinceName"
         label="省"
@@ -125,11 +125,11 @@
         label="更新时间"
         width="90">
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="updateAt"
         label="更新时间戳"
         width="120">
-      </el-table-column>
+      </el-table-column> -->
 
 
       <el-table-column
@@ -272,8 +272,7 @@
 
 <script>
   import axios from '../../utils/axios';
-  const GET_ORDER_LIST = `/api/orders`;
-  const QUERY_BY_STATUS_TEL = `api/orders/all`
+  const GET_ORDER_LIST = `/api/orders/all`;
   const DELETE_ORDER = `/api/orders`;
   const REFUND_APPROVAL = `/api/orders/refund-approve`;
   const ADD_EXPRESS_NO = `/api/orders/shipped`;
@@ -339,14 +338,14 @@
         }
       },
 
-      //根据status或者tel查询
+      //根据status、tel或者订单号查询
       async searchByStatusOrTel(type,content,pageIndex,pageSize){
         let param = '';
         if(pageIndex && pageSize){
-          param = `${QUERY_BY_STATUS_TEL}?${type}=${content}&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+          param = `${GET_ORDER_LIST}?${type}=${content}&pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
         else{
-          param = `${QUERY_BY_STATUS_TEL}?${type}=${content}`;
+          param = `${GET_ORDER_LIST}?${type}=${content}`;
         }
         let {code,data,message} = await axios.get(param);
         if(code === 2000){
@@ -364,26 +363,27 @@
         })
         let param = {};
         param[this.select] = this.search;
-        if(this.select === 'telNumber' || this.select === 'status'){
-          this.searchByStatusOrTel(this.select,this.search);
-        }
-        else{
-          this.searchOneOrder(param);
-        }
+        this.searchByStatusOrTel(this.select,this.search);
+        // if(this.select === 'telNumber' || this.select === 'status'){
+        // }
+        // else{
+        //   this.searchOneOrder(param);
+        // }
       },
 
       //查询单个order
       async searchOneOrder(obj){
         if(obj.hasOwnProperty('id')){
-          let {code,data:{expireTime,goodsList,order}} = await axios.get(`${GET_ORDER_LIST}/${obj.id}`);
+          let {code,data:{expireTime,goodsList,order}} = await axios.get(`${GET_ORDER_LIST}?id=${obj.id}`);
           if(code === 2000){
-            this.ordersList.length = 0;
-            let formatedCreatedTime = new Date(order.createdAt);
-            let formatedUpdateTime = new Date(order.updateAt);
-            order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
-            order['formatedUpdateTime'] = this.formatTime(formatedUpdateTime);
-            this.ordersList.push(order);
-            this.goodsList = goodsList;
+            console.log(order);
+            // this.ordersList.length = 0;
+            // let formatedCreatedTime = new Date(order.createdAt);
+            // let formatedUpdateTime = new Date(order.updateAt);
+            // order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
+            // order['formatedUpdateTime'] = this.formatTime(formatedUpdateTime);
+            // this.ordersList.push(order);
+            // this.goodsList = goodsList;
           }
         }
         else{

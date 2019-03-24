@@ -139,7 +139,7 @@
 
 <script>
   import axios from '../../utils/axios';
-  const GET_GOODS_LIST = `/api/goods`;
+  const GET_GOODS_LIST = `/api/goods/all`;
   const UN_RELEASE_GOODS = `/api/goods/status`;
   const ADD_GOODS_COUNT = `/api/goods-sku/total-count`;
 
@@ -263,6 +263,12 @@
           param = param.slice(1);
           let {code,data} = await axios.get(`${GET_GOODS_LIST}?${param}`);
           if(code === 2000){
+            console.log(data.data,'123');
+            data.data.forEach(item=>{
+              item.createdAt = this.formatTime(new Date(item.createdAt));
+              item.updateAt = this.formatTime(new Date(item.updateAt));
+            })
+            console.log(data.data);
             this.goodsList = data.data;
             this.totalCount = data.totalCount;
           }
@@ -277,7 +283,12 @@
 
       onSubmit() {
         console.log('submit!');
-      }
+      },
+
+      //格式化时间戳
+      formatTime(time){
+        return `${time.getFullYear()}-${time.getMonth()+1}-${time.getDate()}`;
+      },
     },
 
     created(){
