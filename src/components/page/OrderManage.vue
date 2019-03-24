@@ -8,6 +8,8 @@
       class="input-with-select">
       <el-select v-model="select" slot="prepend" placeholder="请选择查询类型">
         <el-option label="订单号" value="id"></el-option>
+        <el-option label="手机号" value="telNumber"></el-option>
+        <el-option label="订单状态" value="status"></el-option>
       </el-select>
       <el-button @click="handleSearch" slot="append" icon="el-icon-search"></el-button>
     </el-input>
@@ -271,6 +273,7 @@
 <script>
   import axios from '../../utils/axios';
   const GET_ORDER_LIST = `/api/orders`;
+  const QUERY_BY_STATUS_TEL = `api/orders/all`
   const DELETE_ORDER = `/api/orders`;
   const REFUND_APPROVAL = `/api/orders/refund-approve`;
   const ADD_EXPRESS_NO = `/api/orders/shipped`;
@@ -295,6 +298,7 @@
         select: '',
         totalCount: undefined,
         singleItems: 10,
+        isOrdersAllApi: false,
         deleteOrderId: '',
         addGoodsId: '',
         dialogFormVisible: false,
@@ -327,14 +331,45 @@
       //分页器
       currentChange(index){
         console.log('currentChange',index);
-        this.getOrderList({pageIndex:index,pageSize:10});
+        if(this.isOrdersAllApi){
+          this.searchByStatusOrTel(this.select,this.search,index,10);
+        }
+        else{
+          this.getOrderList({pageIndex:index,pageSize:10})
+        }
+      },
+
+      //根据status或者tel查询
+      async searchByStatusOrTel(type,content,pageIndex,pageSize){
+        let param = '';
+        if(pageIndex && pageSize){
+          param = `${QUERY_BY_STATUS_TEL}?${type}=${content}&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        else{
+          param = `${QUERY_BY_STATUS_TEL}?${type}=${content}`;
+        }
+        let {code,data,message} = await axios.get(param);
+        if(code === 2000){
+          if(data.totalCount>10) this.isOrdersAllApi = true;
+          this.dataProcess(data);
+        }
       },
 
       //搜索
       handleSearch(){
+        if(!this.select || !this.search) 
+        return this.$message({
+          message: '请先选择查询类型~',
+          type: 'warning'
+        })
         let param = {};
         param[this.select] = this.search;
-        this.searchOneOrder(param);
+        if(this.select === 'telNumber' || this.select === 'status'){
+          this.searchByStatusOrTel(this.select,this.search);
+        }
+        else{
+          this.searchOneOrder(param);
+        }
       },
 
       //查询单个order
@@ -466,17 +501,22 @@
           param = param.slice(1);
           let {code,data} = await axios.get(`${GET_ORDER_LIST}?${param}`);
           if(code === 2000){
-            data.data.forEach((order)=>{
-              let formatedCreatedTime = new Date(order.createdAt);
-              let formatedUpdateTime = new Date(order.updateAt);
-              order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
-              order['formatedUpdateTime'] = this.formatTime(formatedUpdateTime);
-              order['statusText'] = this.numIntoText(order.status);
-            })
-            this.ordersList = data.data;
-            this.totalCount = data.totalCount;
+            this.dataProcess(data);
           }
         }
+      },
+
+      //请求到的数据进行处理
+      dataProcess(data){
+        data.data.forEach((order)=>{
+          let formatedCreatedTime = new Date(order.createdAt);
+          let formatedUpdateTime = new Date(order.updateAt);
+          order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
+          order['formatedUpdateTime'] = this.formatTime(formatedUpdateTime);
+          order['statusText'] = this.numIntoText(order.status);
+        })
+        this.ordersList = data.data;
+        this.totalCount = data.totalCount;
       },
 
       numIntoText(num){
