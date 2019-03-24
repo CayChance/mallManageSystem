@@ -6,7 +6,7 @@
       v-model="search"
       @select="handleSelect"
       class="input-with-select">
-      <el-select v-model="select" slot="prepend" placeholder="请选择">
+      <el-select v-model="select" slot="prepend" placeholder="请选择查询类型">
         <el-option label="订单号" value="id"></el-option>
       </el-select>
       <el-button @click="handleSearch" slot="append" icon="el-icon-search"></el-button>
@@ -25,6 +25,11 @@
       </el-table-column>
       <el-table-column
         prop="statusText"
+        label="订单状态"
+        width="120">
+      </el-table-column>
+      <el-table-column
+        prop="status"
         label="订单状态"
         width="120">
       </el-table-column>
@@ -132,12 +137,15 @@
         <template slot-scope="scope">
           <el-button
           size="mini"
+          :disabled="scope.row.status !== 1"
           @click="addExpressNo(scope.$index, scope.row)">发货</el-button>
           <el-button
             size="mini"
+            :disabled="scope.row.status !== 5"
             @click="refundApproval(scope.$index, scope.row)">退款审批</el-button>
           <el-button
             size="mini"
+            :disabled="scope.row.status !== 7"
             @click="refund(scope.$index, scope.row)">退款</el-button>
 
           <!-- <el-button
@@ -343,6 +351,12 @@
             this.goodsList = goodsList;
           }
         }
+        else{
+          this.$message({
+            message: '请先选择查询类型~',
+            type: 'warning'
+          })
+        }
       },
 
       //退款操作
@@ -388,7 +402,7 @@
       //添加订单的快递单号
       addExpressNo(index,row){
         this.addGoodsId = row.id;
-        this.dialogFormVisible = true
+        this.dialogFormVisible = true;
       },
 
       //确认增加快递单号
@@ -453,7 +467,6 @@
           let {code,data} = await axios.get(`${GET_ORDER_LIST}?${param}`);
           if(code === 2000){
             data.data.forEach((order)=>{
-              console.log(order.status);
               let formatedCreatedTime = new Date(order.createdAt);
               let formatedUpdateTime = new Date(order.updateAt);
               order['formatedCreatedTime'] = this.formatTime(formatedCreatedTime);
@@ -507,7 +520,7 @@
     width: 40%;
   }
   .el-select .el-input {
-    width: 130px;
+    width: 160px;
   }
   .input-with-select .el-input-group__prepend {
     background-color: #fff;

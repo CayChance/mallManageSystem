@@ -6,7 +6,7 @@
       v-model="search"
       @select="handleSelect"
       class="input-with-select">
-      <el-select v-model="select" slot="prepend" placeholder="请选择">
+      <el-select v-model="select" slot="prepend" placeholder="请选择查询类型">
         <el-option label="商品名称" value="name"></el-option>
         <el-option label="商品类别" value="category"></el-option>
       </el-select>
@@ -110,7 +110,7 @@
           <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)">下架</el-button>
+            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -267,6 +267,12 @@
             this.totalCount = data.totalCount;
           }
         }
+        else{
+          this.$message({
+            message: '请先选择查询类型~',
+            type: 'warning'
+          })
+        }
       },
 
       onSubmit() {
@@ -290,7 +296,7 @@
     width: 40%;
   }
   .el-select .el-input {
-    width: 130px;
+    width: 160px;
   }
   .input-with-select .el-input-group__prepend {
     background-color: #fff;

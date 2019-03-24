@@ -3,7 +3,7 @@
  */
 
 import axios from 'axios';
-
+import { Message } from 'element-ui';
 
 const token = localStorage.getItem('token');
 
@@ -24,6 +24,19 @@ axios.interceptors.request.use(
 // 响应拦截器
 axios.interceptors.response.use(
   response => {
+    let data = response.data;
+    if(data.code === 2000){
+      Message.success({
+        message: '请求成功~',
+        type: 'success'
+      })
+    }
+    else{
+      Message.error({
+        message: data.message,
+        type: 'error'
+      })
+    }
     return Promise.resolve(response.data);
   },
   error => {
