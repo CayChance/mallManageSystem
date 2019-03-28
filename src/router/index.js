@@ -122,6 +122,11 @@ export default new Router({
       component: resolve => require(['../components/page/Login.vue'], resolve)
     },
     {
+      path: '/vuex',
+      component: resolve => require(['../components/page/VuexTest.vue'], resolve),
+      meta: { title: 'vuex测试' }
+    },
+    {
       path: '*',
       redirect: '/404'
     }
