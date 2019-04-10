@@ -18,21 +18,37 @@
       </el-form-item>
 
       <el-form-item label="商品图片" prop="imageUrl">
-        <input ref='imageUrl' type="file" @click="uploadImage('imageUrl')">
+        <input ref="imageUrl" type="file" @click="uploadImage('imageUrl')">
       </el-form-item>
 
       <el-form-item label="商品分类" prop="categoryId">
         <el-select clearable v-model="goods.categoryId" placeholder="请选择商品分类id" prop="categoryId">
-          <el-option v-for="(item,index) in categoriesList" :label="item.name" :value="item.id" :key="index"></el-option>
+          <el-option
+            v-for="(item,index) in categoriesList"
+            :label="item.name"
+            :value="item.id"
+            :key="index"
+          ></el-option>
         </el-select>
       </el-form-item>
 
       <el-form-item label="推荐人id" prop="referrerId">
         <el-select clearable v-model="goods.referrerId" placeholder="推荐人id" prop="referrerId">
-          <el-option v-for="(item,index) in referrerIdList" :label="item.name" :value="item.id" :key=index></el-option>
+          <el-option
+            v-for="(item,index) in referrerIdList"
+            :label="item.name"
+            :value="item.id"
+            :key="index"
+          ></el-option>
         </el-select>
       </el-form-item>
 
+      <el-form-item label="库存总量" prop="name">
+        <el-input v-model="goodsSKU.totalCount" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="已售数量" prop="name">
+        <el-input v-model="goodsSKU.usedCount" :disabled="true"></el-input>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="unReleaseGoods">创建商品基本信息</el-button>
         <el-button>取消</el-button>
@@ -44,13 +60,14 @@
 <script>
 import axios from "../../utils/axios";
 
-const qiniuUrl = `http://qiniu.wxdut.com`
-const qiniu = require('qiniu-js')
+const qiniuUrl = `http://qiniu.wxdut.com`;
+const qiniu = require("qiniu-js");
 
 const UPDATE_GOODS = `/api/goods`;
 const GET_CATEGORIES_LIST = `/api/categories`;
-const GET_REFERERS_LIST = `/api/referrers`
+const GET_REFERERS_LIST = `/api/referrers`;
 const UN_RELEASE_GOODS = `/api/goods/status`;
+const GET_GOOD_BY_ID = `/api/goods/all`;
 const GET_UPLOAD_TOKEN = `/api/files/upload-token`;
 export default {
   data() {
@@ -59,7 +76,7 @@ export default {
       categoriesList: [],
       referrerIdList: [],
       goods: {
-        id: this.$route.query.id || '',
+        id: this.$route.query.id || "",
         name: "",
         price: "",
         intro: "",
@@ -67,9 +84,10 @@ export default {
         categoryId: "",
         referrerId: ""
       },
-    
-      bannerUrls: [''],
-      imageUrls: [''],
+      goodsSKU: {},
+
+      bannerUrls: [""],
+      imageUrls: [""],
 
       goodsRules: {
         id: [{ required: true, message: "请输入商品id", trigger: "blur" }],
@@ -84,36 +102,48 @@ export default {
           { required: true, message: "请选择推荐人id", trigger: "change" }
         ]
       },
-      
+
       search: "",
       select: "",
       dialogFormVisible: false,
       totalCount: undefined,
-      goodsId: ""
+      goodsId: this.$route.query.id || ""
     };
   },
 
   computed: {
-    pageCount(){
-      return Math.ceil(this.totalCount/this.singleItems);
+    pageCount() {
+      return Math.ceil(this.totalCount / this.singleItems);
     }
   },
 
-
-    watch: {
-      status: {
-        handler: function (newVal, oldVal) {
-          this.currentStatus = this[`${newVal}`]
-        },
-        immediate: true
+  watch: {
+    status: {
+      handler: function(newVal, oldVal) {
+        this.currentStatus = this[`${newVal}`];
       },
-    },
-
+      immediate: true
+    }
+  },
 
   methods: {
-    init(){
+    init() {
+      if (this.goodsId) this.getGoodInfo();
       this.getCategoriesList();
       this.getReferrersList();
+    },
+
+    //获取当前商品信息
+    async getGoodInfo() {
+      let { code, data } = await axios.get(`${GET_GOOD_BY_ID}/${this.goodsId}`);
+      console.log(data);
+      this.goods.name = data.listGoodsVO.name;
+      this.goods.price = data.listGoodsVO.price;
+      this.goods.intro = data.listGoodsVO.intro;
+      this.goods.name = data.listGoodsVO.name;
+      this.goods.categoryId = data.listGoodsVO.category.id;
+      this.goods.referrerId = data.listGoodsVO.referrer.id;
+      this.goodsSKU = data.goodsSKU;
     },
 
     //获取分类列表
@@ -133,18 +163,19 @@ export default {
     },
 
     //下架商品
-    async unReleaseGoods(action){
-      if(this.goods.id){
-        let {code,data} = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.goods.id}`);
-        if(code === 2000){
+    async unReleaseGoods(action) {
+      if (this.goods.id) {
+        let { code, data } = await axios.patch(
+          `${UN_RELEASE_GOODS}?id=${this.goods.id}`
+        );
+        if (code === 2000) {
           this.createGoods();
         }
-      }
-      else{
+      } else {
         this.$message({
           showClose: true,
-          message: '请先输入商品id',
-          type: 'warning'
+          message: "请先输入商品id",
+          type: "warning"
         });
       }
     },
@@ -157,87 +188,93 @@ export default {
         this.$message({
           showClose: true,
           message: message,
-          type: 'success'
+          type: "success"
         });
-      }
-      else{
+      } else {
         this.$message({
           showClose: true,
           message: message,
-          type: 'warning'
+          type: "warning"
         });
       }
     },
 
     //重新上架
     async release() {
-      let { code, data, message } = await axios.patch(`${UN_RELEASE_GOODS}?id=${this.goods.id}`);
+      let { code, data, message } = await axios.patch(
+        `${UN_RELEASE_GOODS}?id=${this.goods.id}`
+      );
       this.$message({
         showClose: true,
         message: message,
-        type: 'success'
+        type: "success"
       });
     },
 
     //上传图片
     uploadImage(ref) {
       let input = undefined;
-      if(ref === 'imageUrl'){
+      if (ref === "imageUrl") {
         input = this.$refs[ref];
-      }
-      else{
+      } else {
         input = this.$refs[ref][0];
       }
-      input.onchange = ()=>{
+      input.onchange = () => {
         let _this = this;
         let localFileName = input.value;
-        let suffix = localFileName.substring(localFileName.lastIndexOf("."),localFileName.length);//后缀名
-        let fileName = localFileName.substring(localFileName.lastIndexOf("\\")+1,localFileName.lastIndexOf("."));
+        let suffix = localFileName.substring(
+          localFileName.lastIndexOf("."),
+          localFileName.length
+        ); //后缀名
+        let fileName = localFileName.substring(
+          localFileName.lastIndexOf("\\") + 1,
+          localFileName.lastIndexOf(".")
+        );
         let file = input.files[0];
 
-        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then((response)=>{
+        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then(response => {
           console.log(response);
-          if(response.code === 2000){
+          if (response.code === 2000) {
             const token = response.data;
             const observer = {
-              next(response){
-                let process = Math.floor(response.total.percent)+'%';
-                if(process === '100%'){
+              next(response) {
+                let process = Math.floor(response.total.percent) + "%";
+                if (process === "100%") {
                   _this.$message({
                     showClose: true,
-                    message: '上传成功~',
-                    type: 'success'
+                    message: "上传成功~",
+                    type: "success"
                   });
 
-                  if(ref === 'imageUrl'){
+                  if (ref === "imageUrl") {
                     _this.goods.imageUrl = `${qiniuUrl}/${fileName}`;
 
                     console.log(_this.goods.imageUrl);
                   }
-                  if(ref.indexOf('bannerUrls')>=0){
-                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`)
-                    _this.bannerUrls.push('');
+                  if (ref.indexOf("bannerUrls") >= 0) {
+                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`);
+                    _this.bannerUrls.push("");
                     console.log(_this.goodsExt.bannerUrls);
                   }
-                  if(ref.indexOf('imageUrls')>=0){
-                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`)
-                    _this.imageUrls.push('');
+                  if (ref.indexOf("imageUrls") >= 0) {
+                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`);
+                    _this.imageUrls.push("");
                     console.log(_this.goodsExt.imageUrls);
                   }
                 }
               },
-              error(err){
+              error(err) {
                 console.log(err);
               },
-              complete(res1){
+              complete(res1) {
                 console.log(res1);
               }
             };
-            const key = fileName;//上传文件名
+            const key = fileName; //上传文件名
             const putExtra = {
-                fname: fileName,
-                params: {},
-                mimeType:["image/png", "image/jpeg", "image/gif"]
+              fname: fileName,
+              params: {},
+              mimeType: ["image/png", "image/jpeg", "image/gif"]
             };
             const config = {
               useCdnDomain: true,
@@ -245,11 +282,11 @@ export default {
             };
 
             let observable = qiniu.upload(file, key, token, putExtra, config);
-            observable.subscribe(observer) // 上传开始
+            observable.subscribe(observer); // 上传开始
           }
-        })
-      }
-    }, 
+        });
+      };
+    }
   },
 
   created() {
@@ -311,7 +348,7 @@ export default {
   height: 178px;
   display: block;
 }
-.height{
-  height: 100px
+.height {
+  height: 100px;
 }
 </style>
