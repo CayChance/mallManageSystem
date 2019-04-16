@@ -12,7 +12,7 @@ module.exports = {
   assetsPublicPath: '/',
   proxyTable: {
     '/api':{
-      target:'https://mall.lxchild.club',
+      target:'http://enjoymall.leanapp.cn',//'https://mall.lxchild.club',
       secure: true,
       changeOrigin:true,
       pathRewrite:{

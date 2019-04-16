@@ -40,6 +40,11 @@ export default new Router({
           meta: { title: '订单管理' }
         },
         {
+          path: '/orderdetail',
+          component: resolve => require(['../components/page/OrderDetail.vue'], resolve),
+          meta: { title: '订单详情' }
+        },
+        {
           path: '/addcategories',
           component: resolve => require(['../components/page/AddCategories.vue'], resolve),
           meta: { title: '新增商品分类' }

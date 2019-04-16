@@ -54,6 +54,11 @@
             title: '订单管理'
           },
           {
+            icon: 'el-icon-more',
+            index: 'orderdetail',
+            title: '订单详情'
+          },
+          {
             icon: 'el-icon-lx-add',
             index: 'addgoods',
             title: '新增商品'

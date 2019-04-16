@@ -17,6 +17,10 @@
         <el-input v-model="goods.intro"></el-input>
       </el-form-item>
 
+      <el-form-item v-show="goods.imageUrl" label="商品图片" prop="imageUrl">
+        <img :src="goods.imageUrl" alt="商品图片">
+      </el-form-item>
+
       <el-form-item label="商品图片" prop="imageUrl">
         <input ref="imageUrl" type="file" @click="uploadImage('imageUrl')">
       </el-form-item>
@@ -141,6 +145,7 @@ export default {
       this.goods.price = data.listGoodsVO.price;
       this.goods.intro = data.listGoodsVO.intro;
       this.goods.name = data.listGoodsVO.name;
+      this.goods.imageUrl = data.listGoodsVO.imageUrl;
       this.goods.categoryId = data.listGoodsVO.category.id;
       this.goods.referrerId = data.listGoodsVO.referrer.id;
       this.goodsSKU = data.goodsSKU;
@@ -297,6 +302,9 @@ export default {
 </script>
 
 <style scoped>
+img{
+  width: 300px;
+}
 .add-goods {
   width: 100%;
   height: 100%;

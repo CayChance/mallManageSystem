@@ -14,18 +14,28 @@
       </el-form-item>
 
       <el-form-item label="商品图片" prop="imageUrl">
-        <input ref='imageUrl' type="file" @click="uploadImage('imageUrl')">
+        <input ref="imageUrl" type="file" @click="uploadImage('imageUrl')">
       </el-form-item>
 
       <el-form-item label="商品分类" prop="categoryId">
         <el-select clearable v-model="goods.categoryId" placeholder="请选择商品分类id" prop="categoryId">
-          <el-option v-for="(item,index) in categoriesList" :label="item.name" :value="item.id" :key="index"></el-option>
+          <el-option
+            v-for="(item,index) in categoriesList"
+            :label="item.name"
+            :value="item.id"
+            :key="index"
+          ></el-option>
         </el-select>
       </el-form-item>
 
       <el-form-item label="推荐人id" prop="referrerId">
         <el-select clearable v-model="goods.referrerId" placeholder="推荐人id" prop="referrerId">
-          <el-option v-for="(item,index) in referrerIdList" :label="item.name" :value="item.id" :key=index></el-option>
+          <el-option
+            v-for="(item,index) in referrerIdList"
+            :label="item.name"
+            :value="item.id"
+            :key="index"
+          ></el-option>
         </el-select>
       </el-form-item>
 
@@ -47,21 +57,28 @@
         </el-form-item>
       </el-form>
 
-      <div class="height">
-      </div>
+      <div class="height"></div>
 
       <el-form ref="form" :rules="goodsExtRules" :model="goodsExt" label-width="120px" size="small">
         <el-form-item label="banner图片" prop="bannerUrls">
-          <input v-for="(item,index) in bannerUrls" 
-          :key=index 
-          :id="'bannerUrls'+index"
-          :ref="'bannerUrls'+index" type="file" @click="uploadImage(`bannerUrls${index}`)">
+          <input
+            v-for="(item,index) in bannerUrls"
+            :key="index"
+            :id="'bannerUrls'+index"
+            :ref="'bannerUrls'+index"
+            type="file"
+            @click="uploadImage(`bannerUrls${index}`)"
+          >
         </el-form-item>
 
         <el-form-item label="image图片" prop="imageUrls">
-          <input v-for="(item,index) in imageUrls" 
-          :key=index 
-          :ref="'imageUrls'+index" type="file" @click="uploadImage(`imageUrls${index}`)">
+          <input
+            v-for="(item,index) in imageUrls"
+            :key="index"
+            :ref="'imageUrls'+index"
+            type="file"
+            @click="uploadImage(`imageUrls${index}`)"
+          >
         </el-form-item>
 
         <el-form-item>
@@ -77,12 +94,12 @@
 <script>
 import axios from "../../utils/axios";
 
-const qiniuUrl = `http://qiniu.wxdut.com`
-const qiniu = require('qiniu-js')
+const qiniuUrl = `http://qiniu.wxdut.com`;
+const qiniu = require("qiniu-js");
 
 const POST_GOODS_LIST = `/api/goods`;
 const GET_CATEGORIES_LIST = `/api/categories`;
-const GET_REFERERS_LIST = `/api/referrers`
+const GET_REFERERS_LIST = `/api/referrers`;
 const RELEASE_GOODS = `/api/goods/status`;
 const POST_GOODS_SKU = `/api/goods-sku`;
 const POST_GOODS_EXT = `/api/goods-ext`;
@@ -102,15 +119,15 @@ export default {
         referrerId: ""
       },
       goodsSKU: {
-        totalCount: "",
+        totalCount: ""
       },
       goodsExt: {
         bannerUrls: [],
         imageUrls: []
       },
 
-      bannerUrls: [''],
-      imageUrls: [''],
+      bannerUrls: [""],
+      imageUrls: [""],
 
       goodsRules: {
         name: [{ required: true, message: "请输入商品名", trigger: "blur" }],
@@ -125,11 +142,17 @@ export default {
         ]
       },
       goodsSKURules: {
-        totalCount: [{ required: true, message: "请输入总数量", trigger: "blur" }],
+        totalCount: [
+          { required: true, message: "请输入总数量", trigger: "blur" }
+        ]
       },
       goodsExtRules: {
-        bannerUrls: [{ required: true, message: "请输入商品名", trigger: "blur" }],
-        imageUrls: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
+        bannerUrls: [
+          { required: true, message: "请输入商品名", trigger: "blur" }
+        ],
+        imageUrls: [
+          { required: true, message: "请输入商品价格", trigger: "blur" }
+        ]
       },
       search: "",
       select: "",
@@ -140,21 +163,19 @@ export default {
   },
 
   computed: {
-    pageCount(){
-      return Math.ceil(this.totalCount/this.singleItems);
+    pageCount() {
+      return Math.ceil(this.totalCount / this.singleItems);
     }
   },
 
-
-    watch: {
-      status: {
-        handler: function (newVal, oldVal) {
-          this.currentStatus = this[`${newVal}`]
-        },
-        immediate: true
+  watch: {
+    status: {
+      handler: function(newVal, oldVal) {
+        this.currentStatus = this[`${newVal}`];
       },
-    },
-
+      immediate: true
+    }
+  },
 
   methods: {
     handleRemove(file, fileList) {
@@ -164,7 +185,7 @@ export default {
       console.log(file);
     },
 
-    init(){
+    init() {
       this.getCategoriesList();
       this.getReferrersList();
     },
@@ -187,115 +208,130 @@ export default {
 
     //创建商品基本信息
     async createGoods() {
-      let { code, data, message } = await axios.post(POST_GOODS_LIST, this.goods);
+      let { code, data, message } = await axios.post(
+        POST_GOODS_LIST,
+        this.goods
+      );
       if (code === 2000) {
         this.$message({
           showClose: true,
           message: message,
-          type: 'success'
+          type: "success"
         });
         this.goodsId = data;
-      }
-      else{
+      } else {
         this.$message({
           showClose: true,
           message: message,
-          type: 'warning'
+          type: "warning"
         });
       }
     },
 
     //商品总量
-    async createGoodsSKU(){
-      Object.assign(this.goodsSKU,{goodsId:this.goodsId});
-      let {code,data,message} = await axios.post(POST_GOODS_SKU, this.goodsSKU);
+    async createGoodsSKU() {
+      Object.assign(this.goodsSKU, { goodsId: this.goodsId });
+      let { code, data, message } = await axios.post(
+        POST_GOODS_SKU,
+        this.goodsSKU
+      );
       this.$message({
         showClose: true,
         message: message,
-        type: 'success'
+        type: "success"
       });
     },
-    
+
     //商品相关图片
-    async createGoodsExt(){
-      Object.assign(this.goodsExt,{goodsId:this.goodsId});
-      let {code,data,message} = await axios.post(POST_GOODS_EXT, this.goodsExt);
+    async createGoodsExt() {
+      Object.assign(this.goodsExt, { goodsId: this.goodsId });
+      let { code, data, message } = await axios.post(
+        POST_GOODS_EXT,
+        this.goodsExt
+      );
       this.$message({
         showClose: true,
         message: message,
-        type: 'success'
+        type: "success"
       });
     },
 
     //上架商品
     async release() {
-      let { code, data, message } = await axios.patch(`${RELEASE_GOODS}?id=${this.goodsId}`);
+      let { code, data, message } = await axios.patch(
+        `${RELEASE_GOODS}?id=${this.goodsId}`
+      );
       this.$message({
         showClose: true,
         message: message,
-        type: 'success'
+        type: "success"
       });
     },
 
     //上传图片
     uploadImage(ref) {
       let input = undefined;
-      if(ref === 'imageUrl'){
+      if (ref === "imageUrl") {
         input = this.$refs[ref];
-      }
-      else{
+      } else {
         input = this.$refs[ref][0];
       }
-      input.onchange = ()=>{
+      input.onchange = () => {
         let _this = this;
         let localFileName = input.value;
-        let suffix = localFileName.substring(localFileName.lastIndexOf("."),localFileName.length);//后缀名
-        let fileName = localFileName.substring(localFileName.lastIndexOf("\\")+1,localFileName.lastIndexOf("."));
+        let suffix = localFileName.substring(
+          localFileName.lastIndexOf("."),
+          localFileName.length
+        ); //后缀名
+        let fileName = localFileName.substring(
+          localFileName.lastIndexOf("\\") + 1,
+          localFileName.lastIndexOf(".")
+        );
         let file = input.files[0];
 
-        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then((response)=>{
+        axios.get(`${GET_UPLOAD_TOKEN}?fileName=${fileName}`).then(response => {
           console.log(response);
-          if(response.code === 2000){
+          if (response.code === 2000) {
             const token = response.data;
             const observer = {
-              next(response){
-                let process = Math.floor(response.total.percent)+'%';
-                if(process === '100%'){
+              next(response) {
+                let process = Math.floor(response.total.percent) + "%";
+                if (process === "100%") {
                   _this.$message({
                     showClose: true,
-                    message: '上传成功~',
-                    type: 'success'
+                    message: "上传成功~",
+                    type: "success"
                   });
 
-                  if(ref === 'imageUrl'){
+                  if (ref === "imageUrl") {
                     _this.goods.imageUrl = `${qiniuUrl}/${fileName}`;
 
                     console.log(_this.goods.imageUrl);
                   }
-                  if(ref.indexOf('bannerUrls')>=0){
-                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`)
-                    _this.bannerUrls.push('');
+                  if (ref.indexOf("bannerUrls") >= 0) {
+                    _this.goodsExt.bannerUrls.push(`${qiniuUrl}/${fileName}`);
+                    _this.bannerUrls.push("");
                     console.log(_this.goodsExt.bannerUrls);
                   }
-                  if(ref.indexOf('imageUrls')>=0){
-                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`)
-                    _this.imageUrls.push('');
+                  if (ref.indexOf("imageUrls") >= 0) {
+                    _this.goodsExt.imageUrls.push(`${qiniuUrl}/${fileName}`);
+                    _this.imageUrls.push("");
                     console.log(_this.goodsExt.imageUrls);
                   }
                 }
               },
-              error(err){
+              error(err) {
                 console.log(err);
               },
-              complete(res1){
+              complete(res1) {
                 console.log(res1);
               }
             };
-            const key = fileName;//上传文件名
+            const key = fileName; //上传文件名
             const putExtra = {
-                fname: fileName,
-                params: {},
-                mimeType:["image/png", "image/jpeg", "image/gif"]
+              fname: fileName,
+              params: {},
+              mimeType: ["image/png", "image/jpeg", "image/gif"]
             };
             const config = {
               useCdnDomain: true,
@@ -303,11 +339,11 @@ export default {
             };
 
             let observable = qiniu.upload(file, key, token, putExtra, config);
-            observable.subscribe(observer) // 上传开始
+            observable.subscribe(observer); // 上传开始
           }
-        })
-      }
-    }, 
+        });
+      };
+    }
   },
 
   created() {
@@ -368,7 +404,7 @@ export default {
   height: 178px;
   display: block;
 }
-.height{
-  height: 100px
+.height {
+  height: 100px;
 }
 </style>

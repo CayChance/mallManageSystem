@@ -51,33 +51,43 @@
         width="120">
       </el-table-column>-->
 
-      <el-table-column fixed="right" label="操作" width="480">
+      <el-table-column fixed="right" label="操作" width="230">
         <template slot-scope="scope">
           <el-button
             size="mini"
+            class="no-border"
             :disabled="scope.row.status !== 1"
             @click="addExpressNo(scope.$index, scope.row)"
           >发货</el-button>
           <el-button
             size="mini"
+            class="no-border"
             :disabled="scope.row.status !== 3"
             @click="refundFirst(scope.$index, scope.row)"
           >申请退款</el-button>
           <el-button
             size="mini"
+            class="no-border"
             :disabled="scope.row.status !== 5"
             @click="refundApproval(scope.$index, scope.row)"
           >退款审批</el-button>
           <el-button
             size="mini"
+            class="no-border"
             :disabled="scope.row.status !== 6"
             @click="refunding(scope.$index, scope.row)"
           >填写退货快递单号</el-button>
           <el-button
             size="mini"
+            class="no-border"
             :disabled="scope.row.status !== 7"
             @click="refund(scope.$index, scope.row)"
           >退款</el-button>
+          <el-button
+            size="mini"
+            class="no-border"
+            @click="orderDetail(scope.$index, scope.row)"
+          >订单详情</el-button>
           <!-- <el-button
             size="mini"
             type="danger"
@@ -511,6 +521,10 @@ export default {
 
     onSubmit() {
       console.log("submit!");
+    },
+
+    orderDetail(index, row) {
+      this.$router.replace(`/orderdetail?id=${row.id}`);
     }
   },
 
@@ -550,5 +564,10 @@ export default {
   margin-right: 0;
   margin-bottom: 0;
   width: 50%;
+}
+.no-border {
+  border: none;
+  padding: 0;
+  margin-left: 5px;
 }
 </style>
