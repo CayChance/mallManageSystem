@@ -1,11 +1,6 @@
 <template>
   <div>
-    <el-input
-      clearable
-      placeholder="请输入内容"
-      v-model="search"
-      class="input-with-select"
-    >
+    <el-input clearable placeholder="请输入内容" v-model="search" class="input-with-select">
       <el-select v-model="select" slot="prepend" placeholder="请选择查询类型">
         <el-option label="订单号" value="id"></el-option>
       </el-select>
@@ -162,8 +157,7 @@
   </div>
 </template>
 <script>
-import axios from "../../utils/axios";
-
+import axios from "utils/axios";
 const GET_ORDER_DETAIL = `/api/orders/admin`;
 
 export default {
@@ -174,8 +168,8 @@ export default {
       order: {},
       goodsList: [],
       expireTime: undefined,
-      search: '',
-      select: ''
+      search: "",
+      select: ""
     };
   },
 
@@ -210,7 +204,7 @@ export default {
       return map[num];
     },
 
-        //搜索
+    //搜索
     handleSearch() {
       if (!this.select || !this.search)
         return this.$message({
@@ -219,7 +213,6 @@ export default {
         });
       this.getOrderDetail(this.search);
     },
-
 
     getData(data) {
       Object.entries(data).forEach(subItem => {
@@ -254,7 +247,7 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss" scoped>
 .demo-table-expand {
   font-size: 0;
 }
@@ -270,14 +263,15 @@ export default {
 .img-wrapper {
   display: flex;
   flex-direction: row;
+  .single-img {
+    list-style-type: none;
+    .img {
+      width: 100px;
+      height: 100px;
+    }
+  }
 }
-.single-img {
-  list-style-type: none;
-}
-.img {
-  width: 100px;
-  height: 100px;
-}
+
 .table {
   margin-top: 50px;
 }
@@ -285,7 +279,7 @@ export default {
   width: 50px;
   height: 50px;
 }
-.el-input-group{
+.el-input-group {
   width: 40%;
 }
 .el-input-group__prepend {

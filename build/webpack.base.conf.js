@@ -28,6 +28,8 @@ module.exports = {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
       'static': path.resolve(__dirname, '../static'),
+      'utils': path.resolve(__dirname,'../src/utils'),
+      'assets': path.resolve(__dirname,'../src/assets')
     }
   },
   module: {
@@ -65,6 +67,14 @@ module.exports = {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader", // creates style nodes from JS strings
+          "css-loader", // translates CSS into CommonJS
+          "sass-loader" // compiles Sass to CSS, using Node Sass by default
+        ]
       }
     ]
   },
