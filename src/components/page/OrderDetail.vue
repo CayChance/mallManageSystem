@@ -150,10 +150,14 @@
           </el-form>
         </template>
       </el-table-column>
-      <el-table-column label="ID" prop="id"></el-table-column>
-      <el-table-column label="goodsUP" prop="goodsUP"></el-table-column>
-      <el-table-column label="goodsCount" prop="goodsCount"></el-table-column>
+      <el-table-column label="订单编号" prop="id"></el-table-column>
+      <el-table-column label="商品名称" prop="goods.name"></el-table-column>
+      <el-table-column width="100px" label="单价" prop="goodsUP"></el-table-column>
+      <el-table-column label="数量" prop="goodsCount"></el-table-column>
+      <el-table-column label="金额" prop="sumCount"></el-table-column>
+      <el-table-column label="图片" prop="goods.imageUrl"></el-table-column>
     </el-table>
+    <div>总金额：{{totalAmount}}</div>
   </div>
 </template>
 <script>
@@ -169,7 +173,8 @@ export default {
       goodsList: [],
       expireTime: undefined,
       search: "",
-      select: ""
+      select: "",
+      totalAmount: 0
     };
   },
 
@@ -206,11 +211,15 @@ export default {
 
     //搜索
     handleSearch() {
-      if (!this.select || !this.search)
+      if (!this.select || !this.search) {
         return this.$message({
           message: "请先选择查询类型~",
           type: "warning"
         });
+      }
+      this.orderData = [];
+      this.goodsList = [];
+      this.totalAmount = 0;
       this.getOrderDetail(this.search);
     },
 
@@ -234,7 +243,10 @@ export default {
       order.status = this.numIntoText(order.status);
       this.orderData.push(order);
       goodsList.forEach(item => {
+        item.goodsUP = item.goodsUP / 100;
+        item.sumCount = item.goodsUP * item.goodsCount;
         this.getData(item);
+        this.totalAmount += item.sumCount;
       });
       this.goodsList = goodsList;
     }
@@ -275,7 +287,8 @@ export default {
 .table {
   margin-top: 50px;
 }
-.avatar-img {
+.avatar-img,
+.img {
   width: 50px;
   height: 50px;
 }
