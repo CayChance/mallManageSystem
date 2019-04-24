@@ -152,10 +152,10 @@
       </el-table-column>
       <el-table-column label="订单编号" prop="id"></el-table-column>
       <el-table-column label="商品名称" prop="goods.name"></el-table-column>
-      <el-table-column width="100px" label="单价" prop="goodsUP"></el-table-column>
+      <el-table-column label="单价" prop="goodsUP"></el-table-column>
       <el-table-column label="数量" prop="goodsCount"></el-table-column>
       <el-table-column label="金额" prop="sumCount"></el-table-column>
-      <el-table-column label="图片" prop="goods.imageUrl"></el-table-column>
+      <!-- <el-table-column label="图片" prop="goods.imageUrl"></el-table-column> -->
     </el-table>
     <div>总金额：{{totalAmount}}</div>
   </div>
