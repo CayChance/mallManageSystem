@@ -28,7 +28,7 @@
 
 <script>
 import axios from "axios";
-const LOGIN = `/api/users/login`;
+const LOGIN = `/api/users`;
 
 export default {
   data: function() {
@@ -47,23 +47,13 @@ export default {
   },
   methods: {
     submitForm(formName) {
-      // this.$refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     console.log(valid);
-      //     localStorage.setItem('ms_username',this.ruleForm.username);
-      //     this.$router.push('/');
-      //   } else {
-      //     console.log('error submit!!');
-      //     return false;
-      //   }
-      // });
       let param = {
         password: this.ruleForm.password,
         username: this.ruleForm.username
       };
 
       axios
-        .post(
+        .get(
           `${LOGIN}?password=${this.ruleForm.password}&username=${
             this.ruleForm.username
           }`
